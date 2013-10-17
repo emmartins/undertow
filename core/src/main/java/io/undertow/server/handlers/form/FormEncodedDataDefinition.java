@@ -21,6 +21,7 @@ package io.undertow.server.handlers.form;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
 import io.undertow.UndertowLogger;
 import io.undertow.UndertowMessages;
@@ -120,6 +121,7 @@ public class FormEncodedDataDefinition implements FormParserFactory.ParserDefini
                 final ByteBuffer buffer = pooled.getResource();
                 do {
                     c = channel.read(buffer);
+                    UndertowLogger.REQUEST_LOGGER.warn("FormEncodedDataParser.doParse() bytes read: "+c);
                     if (c > 0) {
                         buffer.flip();
                         while (buffer.hasRemaining()) {
@@ -225,7 +227,7 @@ public class FormEncodedDataDefinition implements FormParserFactory.ParserDefini
                 while (state != 4) {
                     doParse(channel);
                     if (state != 4) {
-                        channel.awaitReadable();
+                        channel.awaitReadable(5, TimeUnit.SECONDS);
                     }
                 }
             }
